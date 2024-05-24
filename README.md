@@ -2,7 +2,7 @@
 
 ## 注意
 
-1. 本文翻译自大佬的 [llama3-from-scratch](https://github.com/naklecha/llama3-from-scratch) 仓库，本人只是将英文翻译为中文，并无任何改动。原版英文：[README_en.md](README_en.md)。
+1. 本文翻译自大佬的 [llama3-from-scratch](https://github.com/naklecha/llama3-from-scratch) 仓库，本人只是将英文翻译为中文，并无任何改动，略微改动模型，方便加载。原版英文：[README_en.md](README_en.md)。
 2. 针对原版模型约 15G，会上传云盘，开放下载；
 3. 因原版 Llama3 8B 模型32层 Transformers，且大佬仓库使用CPU加载，如果加载全部的参数，16G内存机器加载失败，故选取原版 Llama3 8B 模型权重的前2层，重新保存，约占内存2.7G，此文档也可以直接加载，唯一缺点是后续推理不对，但是在学习矩阵变幻等其他知识无任何问题，链接为[等待上传](.).
 4.  如果对你有用麻烦点一下star，谢谢！
