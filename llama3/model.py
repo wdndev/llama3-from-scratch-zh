@@ -247,3 +247,4 @@ class Transformer(nn.Module):
         logits = self.output(h).float() # (B, seq_len, vocab_size)
 
         return logits
+    
