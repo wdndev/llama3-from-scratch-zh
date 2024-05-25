@@ -124,15 +124,15 @@ config
 
 ```json
 {
-    'dim': 4096,
-    'n_layers': 32,
-    'n_heads': 32,
-    'n_kv_heads': 8,
-    'vocab_size': 128256,
-    'multiple_of': 1024,
-    'ffn_dim_multiplier': 1.3,
-    'norm_eps': 1e-05,
-    'rope_theta': 500000.0
+    "dim": 4096,
+    "n_layers": 32,
+    "n_heads": 32,
+    "n_kv_heads": 8,
+    "vocab_size": 128256,
+    "multiple_of": 1024,
+    "ffn_dim_multiplier": 1.3,
+    "norm_eps": 1e-05,
+    "rope_theta": 500000.0
 }
 
 ```
@@ -366,7 +366,7 @@ query: "the answer to the ultimate question of life, the universe, and everythin
 来看看这个视频(我就是看的这个)可以理解其中的数据学逻辑。
 https://www.youtube.com/watch?v=o29P0Kpobz0&t=530s
 
-> 等我传到B站，再更新链接
+> 国内B站视频链接：[Rotary Positional Embeddings Combining Absolute and Relative](https://www.bilibili.com/video/BV1nt421N7U5/?vd_source=6bc8f793c75740c7bcfb8e281f986a8e&t=530s)
 
 <div>
     <img src="images/rope.png" width="600"/>
