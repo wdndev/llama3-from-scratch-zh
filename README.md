@@ -7,6 +7,7 @@
 3. 因原版 Llama3 8B 模型32层 Transformers，且大佬仓库使用CPU加载，如果加载全部的参数，16G内存机器加载失败，故选取原版 Llama3 8B 模型权重的前2层，重新保存，约占内存2.7G，此文档也可以直接加载，**实际测试内存占用约4~5G**，唯一缺点是后续推理结果不对，但不影响学习矩阵变换等其他知识，链接为 [Meta-Llama-3-8B-Instruct-2layers](https://www.modelscope.cn/models/wdndev/Meta-Llama-3-8B-Instruct-2layers/summary).
 4. 如果对你有用麻烦点一下star，谢谢！
 
+
 ## 从零实现 Llama3 模型
 
 在这个文件中，从头实现了 Llama3，其中包含张量和矩阵乘法。
