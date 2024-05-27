@@ -9,6 +9,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
+
 @dataclass
 class ModelArgs:
     dim: int = 4096
@@ -22,6 +23,7 @@ class ModelArgs:
     rope_theta: float = 500000
 
     max_seq_len: int = 2048
+
 
 class RMSNorm(torch.nn.Module):
     """ Root Mean Square Layer Normalization
@@ -135,9 +137,9 @@ class Attention(nn.Module):
         # (batch_size, seqlen, dim)
         bsz, seqlen, _ = x.shape
         
-        xq = self.wq(x) # (B, seqlen, dim) --> (B, seqlen, n_q_heads * head_size)
-        xk = self.wk(x) # (B, seqlen, dim) --> (B, seqlen, n_kv_heads * head_size)
-        xv = self.wv(x) # (B, seqlen, dim) --> (B, seqlen, b_kv_heads * head_size)
+        xq = self.wq(x) # (bs, seqlen, dim) --> (bs, seqlen, n_q_heads * head_size)
+        xk = self.wk(x) # (bs, seqlen, dim) --> (bs, seqlen, n_kv_heads * head_size)
+        xv = self.wv(x) # (bs, seqlen, dim) --> (bs, seqlen, b_kv_heads * head_size)
 
         xq = xq.view(bsz, seqlen, self.n_local_heads, self.head_dim)
         xk = xk.view(bsz, seqlen, self.n_local_kv_heads, self.head_dim)
@@ -170,6 +172,8 @@ class Attention(nn.Module):
 
 
 class FeedForward(nn.Module):
+    """ Feed forward with SwiGLU
+    """
     def __init__(
         self,
         dim: int,
@@ -189,10 +193,15 @@ class FeedForward(nn.Module):
         self.w3 = nn.Linear(dim, hidden_dim, bias=False)
 
     def forward(self, x):
+        # in SwiGLU, the Swish function is used to gate the linear function of GLU
+        # swish(x) = x * sigmoid(beta * x)
+        # when beta = 1, swish function becomes same as the sigmoid linear unit function (SiLU)
         return self.w2(F.silu(self.w1(x)) * self.w3(x))
 
 
 class TransformerBlock(nn.Module):
+    """ Transformer block: communication followed by computation
+    """
     def __init__(self, layer_id: int, args: ModelArgs):
         super().__init__()
         self.n_heads = args.n_heads
@@ -215,11 +224,14 @@ class TransformerBlock(nn.Module):
         freqs_cos: torch.Tensor,
         freqs_sin: torch.Tensor,
     ):
+        # (B, seq_len, dim) + (B, seq_len, dim) --> (B, seq_len, dim)
         h = x + self.attention(self.attention_norm(x), freqs_cos, freqs_sin)
         out = h + self.feed_forward(self.ffn_norm(h))
         return out
 
 class Transformer(nn.Module):
+    """ Transformer module
+    """
     def __init__(self, params: ModelArgs):
         super().__init__()
         self.params = params
@@ -231,9 +243,9 @@ class Transformer(nn.Module):
         self.layers = torch.nn.ModuleList()
         for layer_id in range(params.n_layers):
             self.layers.append(TransformerBlock(layer_id, params))
-
+        # final normalization layer
         self.norm = RMSNorm(params.dim, eps=params.norm_eps)
-        
+        # final language model head
         self.output = nn.Linear(params.dim, self.vocab_size, bias=False)
 
         freqs_cos, freqs_sin = precompute_freqs_cis(params.dim // params.n_heads, params.max_seq_len, params.rope_theta)
@@ -260,30 +272,31 @@ class Transformer(nn.Module):
     @torch.inference_mode()
     def forward(self, tokens: torch.Tensor, targets: Optional[torch.Tensor] = None):
         _bsz, seqlen = tokens.shape
-        h = self.tok_embeddings(tokens)
+        h = self.tok_embeddings(tokens) # (bs, seq_len) --> (bs, seq_len, dim)
 
         freqs_cos = self.freqs_cos[:seqlen]
         freqs_sin = self.freqs_sin[:seqlen]
 
         for layer in self.layers:
-            h = layer(h, freqs_cos, freqs_sin)
-        h = self.norm(h)
+            h = layer(h, freqs_cos, freqs_sin)  # (bs, seq_len , dim)
+        h = self.norm(h)    # (bs, seq_len , dim)
         
         if targets is not None:
             # if we are given some desired targets also calculate the loss
-            logits = self.output(h).float()
+            logits = self.output(h).float() # (bs, seq_len, vocab_size)
             self.last_loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
         else:
             # inference-time mini-optimization: only forward the output on the very last position
             logits = self.output(h[:, [-1], :]) # note: using list [-1] to preserve the time dim
             self.last_loss = None
-            
+        
+        # (bs, seq_len, vocab_size)
         return logits
     
     @torch.inference_mode()
     def generate(self, tokens, max_new_tokens, temperature=1.0, top_k=None, eos=None):
         """
-        Take a conditioning sequence of indices idx (LongTensor of shape (b,t)) and complete
+        Take a conditioning sequence of indices tokens (LongTensor of shape (b,t)) and complete
         the sequence max_new_tokens times, feeding the predictions back into the model each time.
         Most likely you'll want to make sure to be in model.eval() mode of operation for this.
         Also note this is a super inefficient version of sampling with no key/value cache.
@@ -315,7 +328,7 @@ class Transformer(nn.Module):
         return tokens
 
 def print_model_parameters(model):
-    """ 打印模型各个层参数
+    """ print model paramenters
     """
     param_sum = 0
     for name, param in model.named_parameters():
