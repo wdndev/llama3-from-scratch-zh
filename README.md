@@ -7,6 +7,17 @@
 3. 因原版 Llama3 8B 模型32层 Transformers，且大佬仓库使用CPU加载，如果加载全部的参数，16G内存机器加载失败，故选取原版 Llama3 8B 模型权重的前2层，重新保存，大小约为2.7G，此文档也可以直接加载，**实际测试内存占用约4~5G**，唯一缺点是后续推理结果不对，但不影响学习矩阵变换等其他知识，链接为 [Meta-Llama-3-8B-Instruct-2layers](https://www.modelscope.cn/models/wdndev/Meta-Llama-3-8B-Instruct-2layers/summary).
 4. 如果对你有用麻烦点一下star，谢谢！
 
+## 模型及Colab
+
+模型链接
+
+- Haggingface link: https://huggingface.co/wdndev/Meta-Llama-3-8B-Instruct-2layers
+- ModeScope link: https://www.modelscope.cn/models/wdndev/Meta-Llama-3-8B-Instruct-2layers
+
+colab链接
+
+- llama3-from-scratch-en: https://colab.research.google.com/drive/1X9yEa4hAZzgrwTuxHValBoVt1qfx6AXv?usp=sharing
+- llama3-from-scratch-zh: https://colab.research.google.com/drive/11MQb8Bn4Ck707VEcqqGVdytqOk3OrQQK?usp=sharing
 
 ## 从零实现 Llama3 模型
 
